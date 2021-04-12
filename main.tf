@@ -19,6 +19,10 @@ resource "aws_config_config_rule" "r" {
 resource "aws_config_configuration_recorder_status" "recorde_status" {
   name       = aws_config_configuration_recorder.recorder.name
   is_enabled = true
+  recording_group {
+    all_supported                 = "true"
+    include_global_resource_types = "true"
+  }
   depends_on = [aws_config_delivery_channel.delivery]
 }
 resource "aws_s3_bucket" "config" {
@@ -26,7 +30,8 @@ resource "aws_s3_bucket" "config" {
 }
 
 resource "aws_config_delivery_channel" "delivery" {
-  name           = "${var.name_prefix}-awsconfig-delivery-sechub"
+  depends_on = [aws_config_configuration_recorder.recorder]
+  name           = "${var.name_prefix}-awsconfig-delivery"
   s3_bucket_name = aws_s3_bucket.config.bucket
 }
 resource "aws_config_configuration_recorder" "recorder" {
